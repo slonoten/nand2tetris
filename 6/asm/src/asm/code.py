@@ -37,7 +37,7 @@ M_COMP_CODES = {
 }
 
 COMP_CODES = {comp : "0" + code for comp, code in A_COMP_CODES.items()} | \
-    {comp : "1" + code for comp, code in A_COMP_CODES.items()}
+    {comp : "1" + code for comp, code in M_COMP_CODES.items()}
 
 JUMP_TO_CODE = {
     None: "000",
