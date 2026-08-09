@@ -79,7 +79,7 @@ def assemble(lines: Iterable[str]) -> Iterable[str]:
     next_instr_addr = 0
     code: list[str | None] = []
     for line_num, parse_res in parse(lines):
-        print(">", line_num, next_instr_addr)
+        print(line_num, next_instr_addr)
         if isinstance(parse_res, CInstr):
             code.append(assemble_cinstr(parse_res))
         elif isinstance(parse_res, AInstr):
@@ -101,8 +101,9 @@ def assemble(lines: Iterable[str]) -> Iterable[str]:
                     assert False, f"Invalid address value type {type(addr)}"
         if isinstance(parse_res, Label):
             addr = symbol_to_addr.get(parse_res.label)
+            print(">", parse_res.label, addr)
             if addr is None:  # first label occurience
-                symbol_to_addr[label] = next_instr_addr
+                symbol_to_addr[parse_res.label] = next_instr_addr
             elif isinstance(addr, str):
                 raise RuntimeError(f"Error: label \"{parse_result.label}\" redefined at line {line_num}")
             elif isinstance(addr, list):

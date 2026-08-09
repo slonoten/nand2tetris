@@ -25,6 +25,7 @@ def test_assemble_cinstr():
         BASE_DIR / "max" / "MaxL.asm",
         BASE_DIR / "rect" / "RectL.asm",
         BASE_DIR / "max" / "Max.asm",
+        BASE_DIR / "rect" / "Rect.asm",
     ]
 )
 def test_assemble(asm_path):
