@@ -20,3 +20,6 @@ def test_cinstr_jmp():
 def test_cinstr_dest():
     assert parse_line("M=D") == CInstr("M", "D", None)
 
+
+def test_comment():
+    assert parse_line("  // D = R0 - R1") is None
