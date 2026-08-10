@@ -17,6 +17,7 @@ def test_dest_to_code():
 def test_assemble_cinstr():
     assert assemble_cinstr(CInstr("M", "1", None)) == "1110111111001000"
     assert assemble_cinstr(CInstr("D", "D+A", None)) == "1110000010010000"
+    assert assemble_cinstr(CInstr("M", "!M", None)) == "1111110001001000"
 
 @pytest.mark.parametrize(
     "asm_path", 
@@ -26,6 +27,8 @@ def test_assemble_cinstr():
         BASE_DIR / "rect" / "RectL.asm",
         BASE_DIR / "max" / "Max.asm",
         BASE_DIR / "rect" / "Rect.asm",
+        BASE_DIR / "pong" / "PongL.asm",
+        BASE_DIR / "pong" / "Pong.asm",
     ]
 )
 def test_assemble(asm_path):

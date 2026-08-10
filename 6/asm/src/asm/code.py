@@ -1,4 +1,5 @@
 from typing import Iterable
+from types import MappingProxyType
 from asm.parser import CInstr, AInstr, parse, Label
 
 
@@ -50,7 +51,7 @@ JUMP_TO_CODE = {
     "JMP": "111"
 }
 
-PREDEFINED_SYMBOLS = {f"R{i}": i for i in range(15)} | {symb: i for i, symb in enumerate(("SP", "LCL", "ARG", "THIS", "THAT"))} 
+PREDEFINED_SYMBOLS = MappingProxyType({f"R{i}": i for i in range(16)} | {symb: i for i, symb in enumerate(("SP", "LCL", "ARG", "THIS", "THAT"))} | {"SCREEN": 16384, "KBD": 24576})
 
 
 def dest_to_code(dest: str | None) -> str:
@@ -73,13 +74,14 @@ def addr_to_code(addr: int) -> str:
 
 
 def assemble(lines: Iterable[str]) -> Iterable[str]:
-    symbol_to_addr : dict[str, int | list[int]] = PREDEFINED_SYMBOLS  # label name to address or to list of a-insruction addresses
+    symbol_to_addr : dict[str, int | list[int]] = dict(PREDEFINED_SYMBOLS)  # label name to address or to list of a-insruction addresses
     variables: list[str] = []
 
     next_instr_addr = 0
     code: list[str | None] = []
     for line_num, parse_res in parse(lines):
-        print(line_num, next_instr_addr)
+        if next_instr_addr == 405:
+            print(line_num + 1, next_instr_addr, parse_res)
         if isinstance(parse_res, CInstr):
             code.append(assemble_cinstr(parse_res))
         elif isinstance(parse_res, AInstr):

@@ -4,7 +4,7 @@ from typing import Iterable
 from dataclasses import dataclass
 
 
-LINE_PATTERN = r"\((?P<label_def>\w+)\)|(?://(?P<comment>.*))|(?:(?P<dest>[ADM]{1,3})=)?(?P<comp>[ADM\+\-01]{1,3})(?:;(?P<jump>J\w{1,2}))?|@(?:(?P<addr>\d{1,5})|(?P<label>[A-Za-z]\w*))$"
+LINE_PATTERN = r"\((?P<label_def>[A-Za-z][\w\.$]*)\)|(?://(?P<comment>.*))|(?:(?P<dest>[ADM]{1,3})=)?(?P<comp>[ADM\+\-01\!|&]{1,3})(?:;(?P<jump>J\w{1,2}))?|@(?:(?P<addr>\d{1,5})|(?P<label>[A-Za-z][\w\.$]*))$"
 
 LINE_REGEXP = re.compile(LINE_PATTERN)
 
@@ -30,7 +30,7 @@ def parse_line(line: str) -> CInstr | AInstr | Label | None:
     line = line.strip()
     if not line:
         return None
-    match = LINE_REGEXP.match(line)
+    match = LINE_REGEXP.fullmatch(line)
     if not match:
         raise RuntimeError(f"Can't parse line \"{line}\"")
     if match.group("comment"):

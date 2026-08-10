@@ -11,6 +11,7 @@ def test_ainstr_dec():
 
 def test_ainstr_label():
     assert parse_line("@symbol")  == AInstr("symbol")
+    assert parse_line("@sys.init")  == AInstr("sys.init")
 
 
 def test_cinstr_jmp():
@@ -19,6 +20,7 @@ def test_cinstr_jmp():
 
 def test_cinstr_dest():
     assert parse_line("M=D") == CInstr("M", "D", None)
+    assert parse_line("M=!M") == CInstr("M", "!M", None)
 
 
 def test_comment():
