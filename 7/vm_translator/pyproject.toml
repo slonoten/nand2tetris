@@ -11,3 +11,8 @@ dependencies = [
 
 [tool.uv]
 package = true  # Forces uv to install your local code into the venv 
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
