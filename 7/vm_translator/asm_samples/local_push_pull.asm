@@ -30,15 +30,28 @@ M=D
 @SP
 M=M+1
 
-// [1024 +3] ==255
+// Check
+// [256] ==255
 // [SP] == 257
 
-// pop local 0
-
+// pop local 7
+// target addr -> TMP
+@7
+D=A
+@LCL
+D=D+M
+@TMP
+M=D
 // [--SP] -> D
-
-// D -> local 0
-
+@SP
+M=M-1
+A=M
+D=M
+// D -> local 7
+@TMP
+A=M
+M=D
+// Final loop
 (END)
 @END
 0;JMP
