@@ -13,12 +13,14 @@ def _push_d() -> str:
         """).strip()
 
 
-def _pop_d() -> str:
+def _pop_to_tmp() -> str:
     return dedent("""
         @SP
         M=M-1
         A=M
         D=M
+        @TMP
+        M=D
         """).strip()
 
 
@@ -42,15 +44,10 @@ M=D
 
 def copy_D_to_tmp_indirect() -> str:
     return """@TMP
-A=M
 M=D
 """
 
 
-def segment_to_d(segment: str) -> str:
-    if segment == "local":
-        return """
-    """
 SEGMENT_TO_REG = {
     "local" : "LCL",
     "argument" : "ARG",
@@ -99,12 +96,18 @@ def _segment_to_d(segment: str, index: str) -> str:
 class CodeBuilder                                                                                       (Transformer):
     def push(self, args):
         segment, index = args
-        return f"""// push {segment} {index}
-{_segment_to_d(segment, index)}
-{_push_d()}
-"""
+        return dedent(f"""
+        // push {segment} {index}
+        {_segment_to_d(segment, index)}
+        {_push_d()}
+        """).strip()
+
+    def pop(self, args)
+        segment, index = args
+        return dedent(f"""
+        {_pop_to_tmp()}
+        {_tmp_to_segment(segment)}
+        """).strip()
 
     def program(self, commands):
         return "\n".join(map(str, commands))
-
-    
