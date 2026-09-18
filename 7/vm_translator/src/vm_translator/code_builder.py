@@ -1,51 +1,23 @@
-from textwrap import dedent
-
 from lark import Transformer
 
 
 def _push_d() -> str:
-    return dedent("""
+    return """
         @SP
         A=M 
         M=D
         @SP
         M=M+1
-        """).strip()
+        """
 
 
-def _pop_to_tmp() -> str:
-    return dedent("""
+def _pop_to_d() -> str:
+    return """
         @SP
         M=M-1
         A=M
         D=M
-        @TMP
-        M=D
-        """).strip()
-
-
-def _copy_d_to_addr(base: str, offset: int) -> str:
-    return f"""@{offset}
-D=A
-@{base}
-A=D+M
-D=M"""
-
-
-def copy_addr_to_tmp(base: str, offset: int) -> str:
-    return """@{offset}
-D=A
-${base}
-D=D+M
-@TMP
-M=D
-"""
-
-
-def copy_D_to_tmp_indirect() -> str:
-    return """@TMP
-M=D
-"""
+        """
 
 
 SEGMENT_TO_REG = {
@@ -62,52 +34,85 @@ POINTER_INDEX_TO_REG = {
 
 
 def _segment_to_d(segment: str, index: str) -> str:
-    
     if reg := SEGMENT_TO_REG.get(segment):
-        return dedent(f"""
+        return f"""
             @{index}
             D=A
             @{reg}
             A=D+M
             D=M
-            """).strip()
-    elif segment == "constant":
-        return dedent(f"""
-            @{index}
-            D=A
-            """).strip()
+            """.strip()
     elif segment == "pointer":
         reg = POINTER_INDEX_TO_REG[index]
-        return dedent(f"""
-        @{reg}
-        D=M
-        """).sprip()
+        return f"""
+            @{reg}
+            D=M
+            """.strip()
     elif segment == "temp":
         TMP = 5
         address = TMP + int(index)
-        return dedent(f"""
-        @{address}
-        D=M
-        """).strip() 
+        return f"""
+            @{address}
+            D=M
+            """.strip()    
+    elif segment == "constant":
+        return f"""
+            @{index}
+            D=A
+            """.strip()
         
     raise NotImplemented("No code for {segment}")
+
+
+def _segment_addr_to_d(segment: str, index: str) -> str:
+    if reg := SEGMENT_TO_REG.get(segment):
+        return f"""
+            @{index}
+            D=A
+            @{reg}
+            D=D+M
+            """.strip()
+    elif segment == "pointer":
+        reg = POINTER_INDEX_TO_REG[index]
+        return f"""
+            @{reg}
+            D=M
+            """.sprip()
+    elif segment == "temp":
+        TMP = 5
+        address = TMP + int(index)
+        return f"""
+            @{address}
+            D=M
+            """ 
+
+    raise NotImplemented("Segment {segment} no supported")
+
+
+def dedent(text: str) -> str:
+    return "\n".join(line.lstrip() for line in text.split("\n") if line.lstrip())
 
 
 class CodeBuilder                                                                                       (Transformer):
     def push(self, args):
         segment, index = args
         return dedent(f"""
-        // push {segment} {index}
-        {_segment_to_d(segment, index)}
-        {_push_d()}
-        """).strip()
+            // push {segment} {index}
+            {_segment_to_d(segment, index)}
+            {_push_d()}
+            """)
 
-    def pop(self, args)
+    def pop(self, args):
         segment, index = args
         return dedent(f"""
-        {_pop_to_tmp()}
-        {_tmp_to_segment(segment)}
-        """).strip()
+            {_segment_addr_to_d(segment, index)}
+            @TMP
+            M=D
+            {_pop_to_d()}
+            @TMP
+            A=M
+            M=D
+            """)
 
     def program(self, commands):
         return "\n".join(map(str, commands))
