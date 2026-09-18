@@ -89,6 +89,18 @@ def _segment_addr_to_d(segment: str, index: str) -> str:
     raise NotImplemented("Segment {segment} no supported")
 
 
+def binary_op(op_command: str) -> str:
+        return dedent(f"""
+            {_pop_to_d()}
+            @R13
+            M=D
+            {_pop_to_d()}
+            @R13
+            {op_command}
+            {_push_d()}
+            """)
+
+
 def dedent(text: str) -> str:
     return "\n".join(line.lstrip() for line in text.split("\n") if line.lstrip())
 
@@ -106,13 +118,16 @@ class CodeBuilder                                                               
         segment, index = args
         return dedent(f"""
             {_segment_addr_to_d(segment, index)}
-            @TMP
+            @R13
             M=D
             {_pop_to_d()}
-            @TMP
+            @R13
             A=M
             M=D
             """)
+
+    def add(self, args):
+        return binary_op("D=D+M")
 
     def program(self, commands):
         return "\n".join(map(str, commands))
