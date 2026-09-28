@@ -11,9 +11,9 @@ vm_grammar = r"""
           | "eq"               -> eq
           | "lt"               -> lt
           | "gt"               -> gt
-          | "and"              -> and
-          | "or"               -> or
-          | "not"               -> not
+          | "and"              -> and_
+          | "or"               -> or_
+          | "not"               -> not_
 
     push : "push" segment index
     pop : "pop" segment index
