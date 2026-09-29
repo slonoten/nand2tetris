@@ -14,8 +14,7 @@ def _push_d() -> str:
 def _pop_to_d() -> str:
     return """
         @SP
-        M=M-1
-        A=M
+        AM=M-1
         D=M
         """
 
@@ -62,41 +61,33 @@ def _binary_op(op_name, op_command: str) -> str:
     return dedent(f"""
         // {op_name}
         {_pop_to_d()}
-        @R13
-        M=D
-        {_pop_to_d()}
-        @R13
-        {op_command}
-        {_push_d()}
+        A=A-1
+        M={op_command}
         """)
 
 def _unary_op(op_name, op_command: str) -> str:
     return dedent(f"""
         // {op_name}
-        {_pop_to_d()}
-        {op_command}
-        {_push_d()}
+        @SP
+        A=M-1
+        M={op_command}
         """)
 
 def _compare_op(op_name, jump_code, label):
     return dedent(f"""
         // {op_name}
         {_pop_to_d()}
-        @R13
-        M=D
-        {_pop_to_d()}
-        @R13
-        D=D-M
+        A=A-1
+        D=M-D
+        M=-1
         @{label}
         D;{jump_code}
-        D=0
-        @{label}_end
-        0;JMP
+        @SP
+        A=M-1
+        M=0
         ({label})
-        D=-1
-        ({label}_end)
-        {_push_d()}
         """)
+        
 
 
 def dedent(text: str) -> str:
@@ -157,22 +148,22 @@ class CodeBuilder(Transformer):
             """)
 
     def add(self, args):
-        return _binary_op("add", "D=D+M")
+        return _binary_op("add", "D+M")
 
     def sub(self, args):
-        return _binary_op("sub", "D=D-M")
+        return _binary_op("sub", "M-D")
 
     def neg(self, args):
-        return _unary_op("neg", "D=-D")
+        return _unary_op("neg", "-M")
 
     def and_(self, args):
-        return _binary_op("and", "D=D&M")
+        return _binary_op("and", "D&M")
 
     def or_(self, args):
-        return _binary_op("or", "D=D|M")
+        return _binary_op("or", "D|M")
 
     def not_(self, args):
-        return _unary_op("not", "D=!D")
+        return _unary_op("not", "!M")
 
     def eq(self, args):
         return _compare_op("eq", "JEQ", self._get_next_label("EQ"))
