@@ -88,6 +88,15 @@ def _compare_op(op_name, jump_code, label):
         ({label})
         """)
         
+def zero_locals(n_vars: int) -> str:
+    return f"""
+        @SP
+        A=M
+        {'M=0\nA=A+1\n'*n_vars}
+        D=A
+        @SP
+        M=D
+    """
 
 
 def dedent(text: str) -> str:
@@ -176,6 +185,59 @@ class CodeBuilder(Transformer):
 
     def program(self, commands):
         return "\n".join(map(str, commands))
+
+    def function(self, args):
+        name, n_vars = args
+        n_vars = int(n_vars)
+        return dedent(f"""
+            ({name})
+            {zero_locals(n_vars)}
+            """)
+
+    def return_(self, args):
+        return dedent(f"""
+            // return 
+            //   *ARG = return value
+            {_pop_to_d()}
+            @ARG
+            A=M
+            M=D
+            // save ARG to R13 to restore SP later
+            D=A
+            @R13
+            M=D
+            //   SP=LCL to restore frame
+            @LCL
+            D=M
+            @SP
+            M=D
+            //   restore frame from stack
+            {_pop_to_d()}
+            @THAT
+            M=D
+            {_pop_to_d()}
+            @THIS
+            M=D
+            {_pop_to_d()}
+            @ARG
+            M=D
+            {_pop_to_d()}
+            @LCL
+            M=D
+            // save return address to R14 
+            {_pop_to_d()}
+            @R14
+            M=D
+            // set SP to ARG+1 (ARG saved to R13)
+            @R13
+            D=M
+            @SP
+            M=D+1
+            // jump to callie next after call instruction
+            @R14
+            A=M
+            0;JMP
+            """)
 
     def _segment_to_d(self, segment: str, index: str) -> str:
         if reg := SEGMENT_TO_REG.get(segment):

@@ -3,3 +3,9 @@ uv.lock
 .python-version
 *.egg-info/
 __pycache__/
+
+7/**/*.asm
+7/**/*.hack
+
+8/**/*.asm
+8/**/*.hack
