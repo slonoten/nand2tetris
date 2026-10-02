@@ -194,6 +194,19 @@ class CodeBuilder(Transformer):
             {zero_locals(n_vars)}
             """)
 
+    def label(self, args):
+        name, = args
+        return dedent(f"""
+            ({name})
+            """)
+
+    def goto(self, args):
+        label, = args
+        return dedent(f"""
+            @{label}
+            0;JMP
+            """)
+
     def return_(self, args):
         return dedent(f"""
             // return 

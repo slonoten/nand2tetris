@@ -1,11 +1,14 @@
 from lark import Lark
 
 vm_grammar = r"""
-    ?program: command (_NL command)* _NL*
-    ?command: comment 
-          | push
+    ?program: line (_NL line)* _NL*
+    ?line : command comment? | comment
+    ?command: push
           | pop
           | function
+          | call
+          | label
+          | goto
           | "add"              -> add
           | "sub"              -> sub
           | "neg"              -> neg
@@ -17,17 +20,22 @@ vm_grammar = r"""
           | "not"              -> not_
           | "return"           -> return_ 
 
-    function: "function" func_name vars_num
     push : "push" segment index
     pop : "pop" segment index
+    function: "function" func_name vars_num
+    call: "call" func_name args_num
+    label: "label" label_name
+    goto: "goto" label_name
 
     comment : COMMENT
     ?segment : SEGMENT
     ?index : NUMBER
     ?vars_num: NUMBER
+    ?args_num: NUMBER
     ?func_name: IDENTIFIER
+    ?label_name: IDENTIFIER
 
-    IDENTIFIER : /[\w\d]+\.[\w\d]+/
+    IDENTIFIER : /[A-Za-z][\w\d]*\.[\w\d]+|END/
     SEGMENT : /argument|local|static|this|that|pointer|constant|temp/
     COMMENT : /\/\/.*/
  

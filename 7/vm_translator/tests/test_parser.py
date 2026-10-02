@@ -10,11 +10,18 @@ BASE_DIR = Path(__file__).parent.parent.parent.parent
 def test_push_constant():
     parser.parse("push constant 10")
 
+
 def test_comment():
     parser.parse("// comment it!")
 
+
 def test_function():
     parser.parse("function SimpleFunction.test 2")
+
+
+def test_call():
+    parser.parse("call Main.fibonacci 1")
+
 
 def test_comments():
     parser.parse("""// line 1
