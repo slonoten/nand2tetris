@@ -10,6 +10,12 @@ def _push_d() -> str:
         M=M+1
         """
 
+def _push_value(address: str) -> str:
+    return f"""
+        @{address}
+        D=M
+        {_push_d}
+        """
 
 def _pop_to_d() -> str:
     return """
@@ -107,6 +113,12 @@ class CodeBuilder(Transformer):
     def __init__(self, namespace: str):
         self._label_counter = 0
         self._namespace = namespace
+        self._current_function: str | None = None
+        self._ret_idx: int | None = None
+
+    def line(self, args):
+        command, comment = args
+        return command + "\n" + comment
 
     def comment(self, args):
         comment_text, = args
@@ -189,6 +201,7 @@ class CodeBuilder(Transformer):
     def function(self, args):
         name, n_vars = args
         n_vars = int(n_vars)
+        self._set_current_function(name)
         return dedent(f"""
             ({name})
             {zero_locals(n_vars)}
@@ -252,6 +265,33 @@ class CodeBuilder(Transformer):
             0;JMP
             """)
 
+    def call(self, args):
+        func_name, args_num = args
+        args_num = int(args_num)
+        return_label = self._build_return_label()
+        return dedent(f"""
+            // call {func_name} {args_num}
+            @label
+            D=A
+            {_push_d()}
+            {_push_value("LCL")}
+            {_push_value("ARG")}
+            {_push_value("THIS")}
+            {_push_value("THAT")}
+            @{args_num + 5}
+            D=A
+            @SP
+            D=M-D
+            @ARG
+            M=D
+            @SP
+            D=M
+            @LCL
+            M=D
+            @{func_name}
+            0;JMP
+            ({return_label})""").strip()
+
     def _segment_to_d(self, segment: str, index: str) -> str:
         if reg := SEGMENT_TO_REG.get(segment):
             return f"""
@@ -290,4 +330,13 @@ class CodeBuilder(Transformer):
     def _get_next_label(self, label_prefix: str) -> str:
         label = f"{label_prefix}_{self._label_counter}"
         self._label_counter += 1
+        return label
+
+    def _set_current_function(self, name: str):
+        self._current_function = name
+        self._ret_idx = 0
+
+    def _build_return_label(self) -> str:
+        label = f"{self._current_function}$ret{self._ret_idx}"
+        self._ret_idx += 1
         return label

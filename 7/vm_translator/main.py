@@ -14,10 +14,10 @@ def main(src_path: str):
     src_path = Path(src_path)
     if src_path.is_dir():
         vm_paths = [*src_path.glob("*.vm")]
-        if "Main.vm"
-        for vm_path in src_path.glob("*.vm"):
-            translate(vm_path)
-        
+        if "Sys.vm" not in [path.name for path in vm_paths]:
+            raise RuntimeError("Sys.vm not found")
+        asm_sources = [translate(vm_path) for vm_path in src_path.glob("*.vm")]            
+        (src_path / src_path.name).with_suffix(".asm").write_text("\n".join(asm_sources))
     else:
         src_path.with_suffix(".asm").write_text(translate(src_path))
 

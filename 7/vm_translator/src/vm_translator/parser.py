@@ -2,7 +2,7 @@ from lark import Lark
 
 vm_grammar = r"""
     ?program: line (_NL line)* _NL*
-    ?line : command comment? | comment
+    ?line : command comment? | comment?
     ?command: push
           | pop
           | function
@@ -35,8 +35,8 @@ vm_grammar = r"""
     ?func_name: IDENTIFIER
     ?label_name: IDENTIFIER
 
-    IDENTIFIER : /[A-Za-z][\w\d]*\.[\w\d]+|END/
-    SEGMENT : /argument|local|static|this|that|pointer|constant|temp/
+    IDENTIFIER : /[A-Za-z][\w\d\$_\.]*/
+    SEGMENT.1 : /argument|local|static|this|that|pointer|constant|temp/
     COMMENT : /\/\/.*/
  
     %import common.NUMBER
