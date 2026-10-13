@@ -14,7 +14,7 @@ def _push_value(address: str) -> str:
     return f"""
         @{address}
         D=M
-        {_push_d}
+        {_push_d()}
         """
 
 def _pop_to_d() -> str:
@@ -204,7 +204,7 @@ class CodeBuilder(Transformer):
         self._set_current_function(name)
         return dedent(f"""
             ({name})
-            {zero_locals(n_vars)}
+            {zero_locals(n_vars) if n_vars else ""}
             """)
 
     def label(self, args):

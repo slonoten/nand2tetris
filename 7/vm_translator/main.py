@@ -1,4 +1,5 @@
 import sys
+from itertools import chain
 from pathlib import Path
 
 from vm_translator.code_builder import CodeBuilder
@@ -16,8 +17,9 @@ def main(src_path: str):
         vm_paths = [*src_path.glob("*.vm")]
         if "Sys.vm" not in [path.name for path in vm_paths]:
             raise RuntimeError("Sys.vm not found")
-        asm_sources = [translate(vm_path) for vm_path in src_path.glob("*.vm")]            
-        (src_path / src_path.name).with_suffix(".asm").write_text("\n".join(asm_sources))
+        start_asm = (Path(__file__).parent / "asm" / "start.asm").read_text() 
+        asm_sources = map(translate, vm_paths)
+        (src_path / src_path.name).with_suffix(".asm").write_text("\n".join(chain([start_asm],asm_sources)))
     else:
         src_path.with_suffix(".asm").write_text(translate(src_path))
 
