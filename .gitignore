@@ -9,3 +9,5 @@ __pycache__/
 
 8/**/*.asm
 8/**/*.hack
+
+!7/vm_translator/asm/*
