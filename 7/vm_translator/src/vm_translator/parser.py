@@ -18,7 +18,8 @@ vm_grammar = r"""
           | "and"              -> and_
           | "or"               -> or_
           | "not"              -> not_
-          | "return"           -> return_ 
+          | "return"           -> return_
+          | if_goto
 
     push : "push" segment index
     pop : "pop" segment index
@@ -26,6 +27,7 @@ vm_grammar = r"""
     call: "call" func_name args_num
     label: "label" label_name
     goto: "goto" label_name
+    if_goto: "if" "-" "goto" label_name
 
     comment : COMMENT
     ?segment : SEGMENT
@@ -38,6 +40,7 @@ vm_grammar = r"""
     IDENTIFIER : /[A-Za-z][\w\d\$_\.]*/
     SEGMENT.1 : /argument|local|static|this|that|pointer|constant|temp/
     COMMENT : /\/\/.*/
+    MINUS: /-/
  
     %import common.NUMBER
     %import common.WS_INLINE

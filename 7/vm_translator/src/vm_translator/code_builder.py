@@ -203,6 +203,7 @@ class CodeBuilder(Transformer):
         n_vars = int(n_vars)
         self._set_current_function(name)
         return dedent(f"""
+            // function {name} {n_vars}
             ({name})
             {zero_locals(n_vars) if n_vars else ""}
             """)
@@ -216,6 +217,7 @@ class CodeBuilder(Transformer):
     def goto(self, args):
         label, = args
         return dedent(f"""
+            // goto {label}
             @{label}
             0;JMP
             """)
@@ -269,9 +271,17 @@ class CodeBuilder(Transformer):
         func_name, args_num = args
         args_num = int(args_num)
         return_label = self._build_return_label()
+        if args_num == 0:
+            args_num = 1
+            add_placeholder_for_return = f"""
+            D=0
+            {_push_d()}"""
+        else:
+            add_placeholder_for_return = ""
         return dedent(f"""
             // call {func_name} {args_num}
-            @label
+            {add_placeholder_for_return}
+            @{return_label}
             D=A
             {_push_d()}
             {_push_value("LCL")}
@@ -291,6 +301,15 @@ class CodeBuilder(Transformer):
             @{func_name}
             0;JMP
             ({return_label})""").strip()
+
+    def if_goto(self, args):
+        label, = args
+        return dedent(f"""
+        // if-goto {label}
+        {_pop_to_d()}
+        @{label}
+        D;JNE
+        """)
 
     def _segment_to_d(self, segment: str, index: str) -> str:
         if reg := SEGMENT_TO_REG.get(segment):

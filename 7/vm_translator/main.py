@@ -14,6 +14,7 @@ def translate(src_path: Path) -> str:
 def main(src_path: str):
     src_path = Path(src_path)
     if src_path.is_dir():
+        # bootstrap_vm_path = Path(__file__).parent / "bootstrap" / "bootstrap.vm"
         vm_paths = [*src_path.glob("*.vm")]
         if "Sys.vm" not in [path.name for path in vm_paths]:
             raise RuntimeError("Sys.vm not found")
